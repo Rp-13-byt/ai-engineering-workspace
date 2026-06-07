@@ -44,7 +44,7 @@ class RealtimeClient {
     this.socket.onmessage = (message) => {
       try {
         const event = JSON.parse(message.data);
-        if (typeof event.online === "number") {
+        if (event.type === "online") {
           this.onlineCount = event.online;
           this.notify(event);
         } else {
@@ -102,7 +102,7 @@ export function useRealtime(organizationId: string, token: string | null) {
     const unsubscribe = client.subscribe((event) => {
       if (event.type === "status.changed") {
         setStatus(client.status);
-      } else if (typeof event.online === "number") {
+      } else if (event.type === "online") {
         setOnlineCount(event.online);
       }
     });

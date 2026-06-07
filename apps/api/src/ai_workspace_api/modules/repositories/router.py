@@ -1,12 +1,13 @@
 import uuid
 
-from fastapi import APIRouter, Depends, Header, Query, status
+from fastapi import APIRouter, Depends, Query, Request, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_workspace_api.core.config import Settings, get_settings
 from ai_workspace_api.core.database import get_session
 from ai_workspace_api.core.dependencies import get_organization_id, require_permission
-from ai_workspace_api.core.models import RepositoryStatus, User
+from ai_workspace_api.core.models import Repository, RepositoryStatus, User
 from ai_workspace_api.core.permissions import Permission
 from ai_workspace_api.modules.repositories.schemas import (
     ReindexResponse,
@@ -89,9 +90,6 @@ async def reindex_repository(
     await service.session.commit()
     return ReindexResponse(repository_id=repository.id, status=repository.indexing_status, job_idempotency_key=key)
 
-from fastapi import Request
-from sqlalchemy import select
-from ai_workspace_api.core.models import Repository
 
 @router.post("/github/webhook")
 async def github_webhook(

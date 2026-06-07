@@ -1,5 +1,4 @@
 import re
-import uuid
 from datetime import UTC, datetime, timedelta
 from secrets import token_hex
 

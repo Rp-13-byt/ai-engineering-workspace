@@ -1,5 +1,4 @@
 from ai_workspace_api.modules.indexing.chunking import (
-    Chunk,
     SemanticChunker,
     detect_language,
 )

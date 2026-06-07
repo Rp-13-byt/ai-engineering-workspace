@@ -1,9 +1,11 @@
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from ai_workspace_api.core.config import Settings
 from ai_workspace_api.core.models import ChatMessage
 from ai_workspace_api.infrastructure.llm import LLMGateway, RetrievedContext
+
 
 @pytest.fixture
 def settings():

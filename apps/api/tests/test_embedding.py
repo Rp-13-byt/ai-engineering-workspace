@@ -1,8 +1,6 @@
 import asyncio
 import math
 
-import pytest
-
 from ai_workspace_api.core.config import Settings
 from ai_workspace_api.infrastructure.embedding import (
     CachedEmbeddingProvider,

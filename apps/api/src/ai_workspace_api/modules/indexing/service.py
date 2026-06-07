@@ -2,20 +2,26 @@ import hashlib
 import uuid
 
 from fastapi import status
+from prometheus_client import Counter, Histogram
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_workspace_api.core.config import Settings
 from ai_workspace_api.core.errors import ApiError
-from ai_workspace_api.core.models import CodeChunk, CodeDocument, Repository, RepositoryStatus, RepositorySnapshot, RepositoryBranch
+from ai_workspace_api.core.models import (
+    CodeChunk,
+    CodeDocument,
+    Repository,
+    RepositoryBranch,
+    RepositorySnapshot,
+    RepositoryStatus,
+)
 from ai_workspace_api.core.repository_scope import get_repository_for_organization
 from ai_workspace_api.infrastructure.github import GitHubClient
 from ai_workspace_api.infrastructure.llm import LLMGateway
 from ai_workspace_api.modules.indexing.chunking import SemanticChunker, detect_language
 from ai_workspace_api.modules.indexing.file_filter import FileFilter
 from ai_workspace_api.modules.indexing.schemas import IndexingStats
-
-from prometheus_client import Counter, Histogram
 
 INDEXING_DOCUMENTS_TOTAL = Counter(
     "workspace_indexing_documents_total",
@@ -35,6 +41,8 @@ INDEXING_ERRORS_TOTAL = Counter(
     "Total number of indexing errors",
     ["error_type"],
 )
+
+class IndexingService:
     def __init__(self, session: AsyncSession, settings: Settings) -> None:
         self.session = session
         self.settings = settings
