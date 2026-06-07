@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: ai-workspace
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          image: ai-workspace-worker:latest
+          imagePullPolicy: Never
+          envFrom:
+            - configMapRef:
+                name: workspace-config
+            - secretRef:
+                name: workspace-secrets
+          ports:
+            - containerPort: 9100
+              name: metrics
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9100
+            initialDelaySeconds: 15
+            periodSeconds: 20

@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workspace-worker
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: workspace-worker
+  template:
+    metadata:
+      labels:
+        app: workspace-worker
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/example/ai-workspace-worker:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9100
+              name: metrics
+          envFrom:
+            - configMapRef:
+                name: workspace-config
+            - secretRef:
+                name: workspace-secrets
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: workspace-worker-metrics
+spec:
+  selector:
+    app: workspace-worker
+  ports:
+    - port: 9100
+      targetPort: metrics
+      name: metrics
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: workspace-worker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: workspace-worker
+  minReplicas: 4
+  maxReplicas: 100
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70

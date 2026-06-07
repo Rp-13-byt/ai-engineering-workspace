@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workspace-config
+  namespace: ai-workspace
+data:
+  DATABASE_URL: "postgresql+asyncpg://workspace:workspace@postgres:5432/workspace"
+  REDIS_URL: "redis://redis:6379/0"
+  RABBITMQ_URL: "amqp://workspace:workspace@rabbitmq:5672/"
+  LOG_LEVEL: "INFO"
+  EMBEDDING_MODEL: "text-embedding-3-small"

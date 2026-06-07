@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: workspace-api
+    patch: |-
+      - op: replace
+        path: /spec/maxReplicas
+        value: 80
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: workspace-worker
+    patch: |-
+      - op: replace
+        path: /spec/maxReplicas
+        value: 400
