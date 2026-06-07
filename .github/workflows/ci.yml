@@ -41,7 +41,7 @@ jobs:
           - 5672:5672
     env:
       DATABASE_URL: postgresql+asyncpg://workspace:workspace@localhost:5432/workspace
-      SYNC_DATABASE_URL: postgresql://workspace:workspace@localhost:5432/workspace
+      SYNC_DATABASE_URL: postgresql+psycopg://workspace:workspace@localhost:5432/workspace
       REDIS_URL: redis://localhost:6379/0
       RABBITMQ_URL: amqp://workspace:workspace@localhost:5672/
       JWT_SECRET: test-secret

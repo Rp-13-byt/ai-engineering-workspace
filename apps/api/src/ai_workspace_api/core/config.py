@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     api_base_url: AnyHttpUrl | str = "http://localhost:8000"
 
     database_url: str = "postgresql+asyncpg://workspace:workspace@localhost:5432/workspace"
-    sync_database_url: str = "postgresql://workspace:workspace@localhost:5432/workspace"
+    sync_database_url: str = "postgresql+psycopg://workspace:workspace@localhost:5432/workspace"
     database_pool_size: int = 20
     database_max_overflow: int = 20
 

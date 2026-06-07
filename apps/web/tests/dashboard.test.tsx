@@ -1,3 +1,4 @@
+import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
@@ -26,6 +27,6 @@ describe("Dashboard", () => {
     renderWithClient();
     expect(screen.getByText("AI Engineering Workspace")).toBeInTheDocument();
     expect(screen.getByText("Repositories")).toBeInTheDocument();
-    expect(screen.getByText("AI code chat")).toBeInTheDocument();
+    expect(screen.getByText("AI Code Chat")).toBeInTheDocument();
   });
 });
