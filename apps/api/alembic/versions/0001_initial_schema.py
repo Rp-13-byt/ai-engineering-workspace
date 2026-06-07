@@ -22,11 +22,11 @@ def upgrade() -> None:
     op.execute("CREATE EXTENSION IF NOT EXISTS vector")
     op.execute("CREATE EXTENSION IF NOT EXISTS pgcrypto")
 
-    role = postgresql.ENUM("owner", "admin", "engineer", "viewer", name="role")
+    role = postgresql.ENUM("owner", "admin", "engineer", "viewer", name="role", create_type=False)
     repository_status = postgresql.ENUM(
-        "queued", "indexing", "indexed", "failed", name="repository_status"
+        "queued", "indexing", "indexed", "failed", name="repository_status", create_type=False
     )
-    task_status = postgresql.ENUM("todo", "in_progress", "blocked", "done", name="task_status")
+    task_status = postgresql.ENUM("todo", "in_progress", "blocked", "done", name="task_status", create_type=False)
     role.create(op.get_bind(), checkfirst=True)
     repository_status.create(op.get_bind(), checkfirst=True)
     task_status.create(op.get_bind(), checkfirst=True)
