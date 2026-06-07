@@ -56,8 +56,8 @@ async def test_chat_conversation_scope_rejects_mismatched_repository() -> None:
         title="Existing conversation",
     )
     session = FakeSession({(Conversation, conversation_id): conversation})
-    from unittest.mock import MagicMock
-    service = ChatService(session=session, settings=MagicMock())
+    from ai_workspace_api.core.config import Settings
+    service = ChatService(session=session, settings=Settings())
     payload = ChatRequest(
         repository_id=repository_id,
         conversation_id=conversation_id,
