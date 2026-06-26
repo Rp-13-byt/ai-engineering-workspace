@@ -23,6 +23,12 @@ class ChangedFile:
     status: Literal["added", "modified", "removed", "renamed", "copied", "changed", "unchanged"]
 
 
+@dataclass(frozen=True)
+class GitHubPullRequest:
+    number: int
+    html_url: str
+
+
 class GitHubClient:
     def __init__(self, access_token: str | None = None) -> None:
         self.access_token = access_token
@@ -133,3 +139,35 @@ class GitHubClient:
             json={"title": title, "body": body, "head": head, "base": base},
         )
         return str(response.json()["html_url"])
+
+    async def create_pull_request(
+        self,
+        owner: str,
+        name: str,
+        title: str,
+        body: str,
+        head: str,
+        base: str,
+    ) -> GitHubPullRequest:
+        response = await self._request(
+            "POST",
+            f"https://api.github.com/repos/{owner}/{name}/pulls",
+            json={"title": title, "body": body, "head": head, "base": base},
+        )
+        payload = response.json()
+        return GitHubPullRequest(number=int(payload["number"]), html_url=str(payload["html_url"]))
+
+    async def add_labels(
+        self,
+        owner: str,
+        name: str,
+        issue_number: int,
+        labels: list[str],
+    ) -> None:
+        if not labels:
+            return
+        await self._request(
+            "POST",
+            f"https://api.github.com/repos/{owner}/{name}/issues/{issue_number}/labels",
+            json={"labels": labels},
+        )

@@ -9,6 +9,7 @@ class Permission(StrEnum):
     index_repository = "repository:index"
     use_ai = "ai:use"
     generate_pull_request = "pull_request:generate"
+    approve_pull_request = "pull_request:approve"
     manage_tasks = "tasks:manage"
     manage_members = "members:manage"
 
@@ -21,6 +22,7 @@ ROLE_PERMISSIONS: dict[Role, set[Permission]] = {
         Permission.index_repository,
         Permission.use_ai,
         Permission.generate_pull_request,
+        Permission.approve_pull_request,
         Permission.manage_tasks,
         Permission.manage_members,
     },

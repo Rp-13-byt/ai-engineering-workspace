@@ -37,6 +37,12 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-3-small"
     embedding_batch_size: int = 96
     embedding_cache_ttl_hours: int = 168
+    repository_cache_dir: str = "/tmp/ai-workspace-repositories"  # noqa: S108
+    repository_clone_timeout_seconds: int = 300
+    ai_governance_policy_path: str | None = None
+    ai_governance_require_approval_threshold: int = 45
+    ai_governance_block_threshold: int = 85
+    ai_governance_security_scans_enabled: bool = True
 
     s3_endpoint_url: str = "http://localhost:9000"
     s3_access_key_id: str = "workspace"

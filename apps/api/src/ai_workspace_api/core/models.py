@@ -256,6 +256,13 @@ class PullRequestDraft(Base, TimestampMixin):
     diff: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(40), nullable=False, default="draft")
     github_url: Mapped[str | None] = mapped_column(String(500))
+    approval_status: Mapped[str] = mapped_column(String(40), nullable=False, default="Not Required")
+    labels_json: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list)
+    risk_assessment_json: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    policy_evaluation_json: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    security_scan_json: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+    approval_history_json: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list)
+    governance_metadata_json: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
 
 
 class WorkspaceTask(Base, TimestampMixin):

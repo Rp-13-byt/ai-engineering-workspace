@@ -13,6 +13,7 @@ from ai_workspace_api.core.dependencies import (
 from ai_workspace_api.core.models import User
 from ai_workspace_api.core.permissions import Permission
 from ai_workspace_api.modules.pull_requests.schemas import (
+    PullRequestApprovalRequest,
     PullRequestDraftRead,
     PullRequestGenerateRequest,
 )
@@ -37,4 +38,17 @@ async def generate_pull_request(
     service: PullRequestService = Depends(get_pull_request_service),
 ) -> PullRequestDraftRead:
     draft = await service.generate(payload, user.id, organization_id)
+    return PullRequestDraftRead.model_validate(draft)
+
+
+@router.post("/{pull_request_id}/approval", response_model=PullRequestDraftRead)
+async def review_pull_request(
+    pull_request_id: uuid.UUID,
+    payload: PullRequestApprovalRequest,
+    organization_id: uuid.UUID = Depends(get_organization_id),
+    user: User = Depends(get_current_user),
+    _: User = Depends(require_permission(Permission.approve_pull_request)),
+    service: PullRequestService = Depends(get_pull_request_service),
+) -> PullRequestDraftRead:
+    draft = await service.review(pull_request_id, payload, user.id, organization_id)
     return PullRequestDraftRead.model_validate(draft)
