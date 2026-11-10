@@ -1,8 +1,9 @@
+from uuid import uuid4
+
 from fastapi import FastAPI, Request
 from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
-from uuid import uuid4
 
 
 class RequestIdMiddleware(BaseHTTPMiddleware):

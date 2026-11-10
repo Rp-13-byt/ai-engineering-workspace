@@ -1,10 +1,10 @@
+from ai_workspace_api.core.models import Membership, User
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_workspace_api.core.database import get_session
 from ai_workspace_api.core.dependencies import get_current_user
-from ai_workspace_api.core.models import Membership, User
 from ai_workspace_api.modules.users.schemas import CurrentUserResponse, MembershipRead
 
 router = APIRouter(prefix="/users", tags=["users"])

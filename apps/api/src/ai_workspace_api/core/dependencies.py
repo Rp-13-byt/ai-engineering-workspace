@@ -1,14 +1,14 @@
 import uuid
 from collections.abc import Callable
 
+from ai_workspace_api.core.config import Settings, get_settings
+from ai_workspace_api.core.models import Membership, User
 from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ai_workspace_api.core.config import Settings, get_settings
 from ai_workspace_api.core.database import get_session
-from ai_workspace_api.core.models import Membership, User
 from ai_workspace_api.core.permissions import Permission, role_has_permission
 from ai_workspace_api.core.security import InvalidTokenError, decode_access_token
 

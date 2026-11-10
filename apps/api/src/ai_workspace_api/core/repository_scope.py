@@ -1,10 +1,10 @@
 import uuid
 
+from ai_workspace_api.core.models import Repository
 from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_workspace_api.core.errors import ApiError
-from ai_workspace_api.core.models import Repository
 
 
 async def get_repository_for_organization(

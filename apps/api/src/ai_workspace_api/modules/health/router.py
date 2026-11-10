@@ -1,9 +1,9 @@
+from ai_workspace_api.core.cache import get_redis
 from fastapi import APIRouter, Depends
 from redis.asyncio import Redis
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ai_workspace_api.core.cache import get_redis
 from ai_workspace_api.core.database import get_session
 
 router = APIRouter(tags=["health"])

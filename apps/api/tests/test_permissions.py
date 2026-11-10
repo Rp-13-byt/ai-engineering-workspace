@@ -1,4 +1,5 @@
 from ai_workspace_api.core.models import Role
+
 from ai_workspace_api.core.permissions import Permission, role_has_permission
 
 

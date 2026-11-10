@@ -4,9 +4,8 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import bcrypt
-from jose import JWTError, jwt
-
 from ai_workspace_api.core.config import Settings
+from jose import JWTError, jwt
 
 ALGORITHM = "HS256"
 PASSWORD_HASH_PREFIX = "bcrypt-sha256$"  # noqa: S105

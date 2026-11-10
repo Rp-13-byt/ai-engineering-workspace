@@ -1,6 +1,6 @@
 import bcrypt
-
 from ai_workspace_api.core.config import Settings
+
 from ai_workspace_api.core.security import (
     create_access_token,
     decode_access_token,

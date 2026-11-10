@@ -1,15 +1,14 @@
 import re
-import uuid
 from datetime import UTC, datetime, timedelta
 from secrets import token_hex
 
+from ai_workspace_api.core.config import Settings
+from ai_workspace_api.core.models import Membership, Organization, RefreshSession, Role, User
 from fastapi import status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ai_workspace_api.core.config import Settings
 from ai_workspace_api.core.errors import ApiError
-from ai_workspace_api.core.models import Membership, Organization, RefreshSession, Role, User
 from ai_workspace_api.core.security import (
     create_access_token,
     generate_opaque_token,

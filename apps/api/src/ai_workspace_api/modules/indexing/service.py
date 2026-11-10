@@ -118,7 +118,7 @@ class IndexingService:
                 deleted_files += 1
 
             # 2. Process added, modified, or unchanged files
-            for path, item in tree_files.items():
+            for path in tree_files:
                 existing_doc = existing_docs.get(path)
 
                 content = await github.get_file_content(

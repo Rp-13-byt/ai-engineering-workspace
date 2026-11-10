@@ -1,9 +1,9 @@
+from ai_workspace_api.core.config import Settings, get_settings
+from ai_workspace_api.infrastructure.rate_limit import limiter
 from fastapi import APIRouter, Depends, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ai_workspace_api.core.config import Settings, get_settings
 from ai_workspace_api.core.database import get_session
-from ai_workspace_api.infrastructure.rate_limit import limiter
 from ai_workspace_api.modules.auth.schemas import (
     ForgotPasswordRequest,
     LoginRequest,
