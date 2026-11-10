@@ -1,6 +1,6 @@
 """hybrid retrieval and incremental indexing
 
-Revision ID: 0003_hybrid_retrieval_and_incremental_indexing
+Revision ID: 0003_hybrid_retrieval
 Revises: 0002_seed_demo_data
 Create Date: 2026-11-10
 """
@@ -10,7 +10,7 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0003_hybrid_retrieval_and_incremental_indexing"
+revision: str = "0003_hybrid_retrieval"
 down_revision: str | None = "0002_seed_demo_data"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None

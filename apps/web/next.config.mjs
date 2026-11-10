@@ -2,9 +2,7 @@
 const nextConfig = {
   output: "standalone",
   poweredByHeader: false,
-  experimental: {
-    typedRoutes: true
-  },
+  typedRoutes: true,
   async headers() {
     return [
       {
