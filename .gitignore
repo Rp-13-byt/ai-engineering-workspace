@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build output
+.next/
+dist/
+build/
+coverage/
+htmlcov/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local data
+.data/
+tmp/
+logs/
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Generated API clients
+openapi.json

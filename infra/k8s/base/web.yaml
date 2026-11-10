@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workspace-web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: workspace-web
+  template:
+    metadata:
+      labels:
+        app: workspace-web
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/example/ai-workspace-web:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: workspace-config
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 150m
+              memory: 256Mi
+            limits:
+              cpu: 750m
+              memory: 768Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: workspace-web
+spec:
+  selector:
+    app: workspace-web
+  ports:
+    - port: 3000
+      targetPort: http
+      name: http
