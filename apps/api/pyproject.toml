@@ -53,7 +53,10 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "ASYNC", "S"]
-ignore = ["S101", "B008", "S105", "S106", "E501", "UP042", "S311", "S110"]
+ignore = ["S101", "B008", "S105", "S106", "E501", "UP042", "S311", "S110", "I001"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ai_workspace_api"]
 
 [tool.mypy]
 python_version = "3.11"
