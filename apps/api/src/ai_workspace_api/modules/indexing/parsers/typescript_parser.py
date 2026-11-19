@@ -142,7 +142,6 @@ class TypeScriptCodeParser(BaseCodeParser):
                 covered_ranges.append((cls_start, cls_end))
 
                 # Extract methods inside class
-                methods_found = False
                 inner_idx = idx + 1
                 while inner_idx < cls_end_idx:
                     inner_line = lines[inner_idx]
@@ -164,22 +163,21 @@ class TypeScriptCodeParser(BaseCodeParser):
                                     parent_scope=cls_name,
                                 )
                             )
-                            methods_found = True
                             inner_idx = max(inner_idx + 1, m_end)
                             continue
                     inner_idx += 1
 
-                if not methods_found:
-                    raw_chunks.extend(
-                        self.sub_chunk_oversized(
-                            lines,
-                            cls_start,
-                            cls_end,
-                            symbol=cls_name,
-                            symbol_type="class",
-                            parent_scope=None,
-                        )
+                # Always capture the enclosing class symbol
+                raw_chunks.extend(
+                    self.sub_chunk_oversized(
+                        lines,
+                        cls_start,
+                        cls_end,
+                        symbol=cls_name,
+                        symbol_type="class",
+                        parent_scope=None,
                     )
+                )
                 idx = cls_end
                 continue
 
