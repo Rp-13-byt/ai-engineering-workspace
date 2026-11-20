@@ -1,4 +1,14 @@
 from ai_workspace_api.modules.changelens.diff_analysis import DiffAnalyzer
+from ai_workspace_api.modules.changelens.graph_models import (
+    EdgeProvenance,
+    EdgeType,
+    GraphTraversalPath,
+    ImpactEdge,
+    ImpactGraph,
+    ImpactNode,
+    NodeType,
+)
+from ai_workspace_api.modules.changelens.impact_graph import ImpactGraphBuilder, ImpactGraphTraverser
 from ai_workspace_api.modules.changelens.models import (
     ChangedFile,
     ChangedSymbol,
@@ -14,4 +24,13 @@ __all__ = [
     "DiffAnalysisResult",
     "DiffHunk",
     "FileChangeType",
+    "EdgeProvenance",
+    "EdgeType",
+    "GraphTraversalPath",
+    "ImpactEdge",
+    "ImpactGraph",
+    "ImpactNode",
+    "NodeType",
+    "ImpactGraphBuilder",
+    "ImpactGraphTraverser",
 ]
