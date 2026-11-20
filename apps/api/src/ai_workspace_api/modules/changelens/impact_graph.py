@@ -28,7 +28,7 @@ def _classify_node_type(path_str: str, symbol_type: str | None = None) -> NodeTy
         return NodeType.TEST
     if "alembic/versions" in lower or "migrations" in lower:
         return NodeType.MIGRATION
-    if "router" in lower or "routes" in lower or "endpoints" in lower:
+    if "route" in lower or "endpoint" in lower or "controller" in lower:
         return NodeType.API_ROUTE
     if any(s in lower for s in ("security", "permission", "auth")):
         return NodeType.SECURITY_BOUNDARY
@@ -139,22 +139,21 @@ class ImpactGraphBuilder:
                                         ),
                                     )
                                 )
-                            else:
-                                # Edge to target file directly
-                                graph.add_edge(
-                                    ImpactEdge(
-                                        source_id=source_path,
-                                        target_id=target_path,
+                            # Also link to the containing module file
+                            graph.add_edge(
+                                ImpactEdge(
+                                    source_id=source_path,
+                                    target_id=target_path,
+                                    edge_type=EdgeType.AST_IMPORT,
+                                    provenance=EdgeProvenance(
                                         edge_type=EdgeType.AST_IMPORT,
-                                        provenance=EdgeProvenance(
-                                            edge_type=EdgeType.AST_IMPORT,
-                                            confidence=0.9,
-                                            source_file=source_path,
-                                            source_line=getattr(node, "lineno", None),
-                                            reason=f"Module import {node.module}",
-                                        ),
-                                    )
+                                        confidence=0.9,
+                                        source_file=source_path,
+                                        source_line=getattr(node, "lineno", None),
+                                        reason=f"Module import {node.module}",
+                                    ),
                                 )
+                            )
             elif isinstance(node, ast.Import):
                 for alias in node.names:
                     for target_path in all_files:
