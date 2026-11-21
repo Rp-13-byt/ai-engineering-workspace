@@ -10,6 +10,7 @@ from ai_workspace_api.modules.changelens.graph_models import (
 )
 from ai_workspace_api.modules.changelens.impact_graph import ImpactGraphBuilder, ImpactGraphTraverser
 from ai_workspace_api.modules.changelens.reachability import ReachabilityAnalyzer, ReachabilityAssessment
+from ai_workspace_api.modules.changelens.schema_linker import SchemaMigrationLinker
 from ai_workspace_api.modules.changelens.models import (
     ChangedFile,
     ChangedSymbol,
@@ -36,4 +37,5 @@ __all__ = [
     "ImpactGraphTraverser",
     "ReachabilityAnalyzer",
     "ReachabilityAssessment",
+    "SchemaMigrationLinker",
 ]
