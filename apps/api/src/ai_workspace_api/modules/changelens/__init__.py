@@ -1,4 +1,5 @@
 from ai_workspace_api.modules.changelens.diff_analysis import DiffAnalyzer
+from ai_workspace_api.modules.changelens.history_analysis import CoModificationPair, FileChurnStats
 from ai_workspace_api.modules.changelens.graph_models import (
     EdgeProvenance,
     EdgeType,
@@ -21,6 +22,8 @@ from ai_workspace_api.modules.changelens.models import (
 
 __all__ = [
     "DiffAnalyzer",
+    "CoModificationPair",
+    "FileChurnStats",
     "ChangedFile",
     "ChangedSymbol",
     "DiffAnalysisResult",
