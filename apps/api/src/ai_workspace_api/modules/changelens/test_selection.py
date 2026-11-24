@@ -20,6 +20,7 @@ class SelectionMode(str, enum.Enum):
 
 
 class TestTier(str, enum.Enum):
+    __test__ = False
     CRITICAL = "critical"
     DIRECT = "direct"
     TRANSITIVE = "transitive"
@@ -46,6 +47,7 @@ class ExecutionBudget:
 
 @dataclass(frozen=True)
 class TestCandidate:
+    __test__ = False
     test_id: str
     target_file: str
     estimated_duration_seconds: float = 1.0
@@ -57,6 +59,7 @@ class TestCandidate:
 
 @dataclass(frozen=True)
 class TestPlanResult:
+    __test__ = False
     mode: SelectionMode
     budget: ExecutionBudget
     selected_tests: list[TestCandidate] = field(default_factory=list)
@@ -122,8 +125,12 @@ class BudgetAwareTestPlanner:
     def _find_tests_for_symbol_or_file(self, file_path: str, symbol_name: str | None = None) -> list[str]:
         """Resolves test candidates mapped to the given file path or symbol."""
         tests: list[str] = []
-        if symbol_name and symbol_name in self.test_index:
-            tests.extend(self.test_index[symbol_name])
+        if symbol_name:
+            qualified = f"{file_path}:{symbol_name}"
+            if qualified in self.test_index:
+                tests.extend(self.test_index[qualified])
+            if symbol_name in self.test_index:
+                tests.extend(self.test_index[symbol_name])
         if file_path in self.test_index:
             tests.extend(self.test_index[file_path])
 
@@ -134,9 +141,8 @@ class BudgetAwareTestPlanner:
                 if cand in self.test_index:
                     tests.extend(self.test_index[cand])
 
-        # Return unique tests preserving order
-        seen = set()
-        unique = []
+        seen: set[str] = set()
+        unique: list[str] = []
         for t in tests:
             if t not in seen:
                 seen.add(t)
@@ -154,14 +160,16 @@ class BudgetAwareTestPlanner:
         """Plans and ranks tests against the provided change diff and reachability blast radius."""
         budget = custom_budget or ExecutionBudget.for_mode(mode)
 
-        all_changed_symbols = diff.all_changed_symbols
-        changed_files = {cf.path for cf in diff.changed_files}
+        all_changed_symbols = diff.changed_symbols
+        file_map = {f.path: f for f in diff.files}
 
-        reachability_node_ids: set[str] = set()
         blast_radius = 0
+        reachability_nodes: list[str] = []
         if reachability:
-            reachability_node_ids = set(reachability.affected_node_ids)
-            blast_radius = reachability.blast_radius
+            blast_radius = reachability.total_affected_count
+            reachability_nodes = [node.id for node in reachability.affected_nodes]
+            if not reachability_nodes and reachability.changed_node_ids:
+                reachability_nodes = list(reachability.changed_node_ids)
 
         candidate_map: dict[str, TestCandidate] = {}
         all_target_nodes: set[str] = set()
@@ -170,7 +178,17 @@ class BudgetAwareTestPlanner:
         for sym in all_changed_symbols:
             node_id = f"{sym.file_path}:{sym.name}"
             all_target_nodes.add(node_id)
-            tier = TestTier.CRITICAL if sym.is_critical_path else TestTier.DIRECT
+            f_info = file_map.get(sym.file_path)
+            is_critical = False
+            if f_info and (
+                f_info.is_migration
+                or f_info.is_config
+                or f_info.is_api_route
+                or f_info.is_security_sensitive
+            ):
+                is_critical = True
+
+            tier = TestTier.CRITICAL if is_critical else TestTier.DIRECT
 
             mapped_tests = self._find_tests_for_symbol_or_file(sym.file_path, sym.name)
             for test_id in mapped_tests:
@@ -178,7 +196,7 @@ class BudgetAwareTestPlanner:
                 if test_id in candidate_map:
                     existing = candidate_map[test_id]
                     updated_nodes = list(set(existing.covered_node_ids + [node_id]))
-                    is_crit = existing.tier == TestTier.CRITICAL or sym.is_critical_path
+                    is_crit = existing.tier == TestTier.CRITICAL or is_critical
                     new_score = self._compute_candidate_priority(
                         test_id=test_id,
                         target_file=sym.file_path,
@@ -205,7 +223,7 @@ class BudgetAwareTestPlanner:
                         covered_nodes=[node_id],
                         duration=dur,
                         blast_radius=blast_radius,
-                        is_critical=sym.is_critical_path,
+                        is_critical=is_critical,
                     )
                     candidate_map[test_id] = TestCandidate(
                         test_id=test_id,
@@ -214,37 +232,44 @@ class BudgetAwareTestPlanner:
                         tier=tier,
                         covered_node_ids=[node_id],
                         priority_score=score,
-                        selection_reason=f"Direct test for {node_id} (critical={sym.is_critical_path})",
+                        selection_reason=f"Direct test for {node_id} (critical={is_critical})",
                     )
 
         # 2. Files changed with no symbols (e.g. migration, configs)
-        for fpath in changed_files:
+        for fpath, f_info in file_map.items():
             mapped_tests = self._find_tests_for_symbol_or_file(fpath)
+            is_critical = (
+                f_info.is_migration
+                or f_info.is_config
+                or f_info.is_api_route
+                or f_info.is_security_sensitive
+            )
+            tier = TestTier.CRITICAL if is_critical else TestTier.DIRECT
             for test_id in mapped_tests:
                 if test_id not in candidate_map:
                     dur = self.test_durations.get(test_id, 1.0)
                     score = self._compute_candidate_priority(
                         test_id=test_id,
                         target_file=fpath,
-                        tier=TestTier.DIRECT,
+                        tier=tier,
                         covered_nodes=[fpath],
                         duration=dur,
                         blast_radius=blast_radius,
-                        is_critical=False,
+                        is_critical=is_critical,
                     )
                     candidate_map[test_id] = TestCandidate(
                         test_id=test_id,
                         target_file=fpath,
                         estimated_duration_seconds=dur,
-                        tier=TestTier.DIRECT,
+                        tier=tier,
                         covered_node_ids=[fpath],
                         priority_score=score,
-                        selection_reason=f"File-level test for {fpath}",
+                        selection_reason=f"File-level test for {fpath} (critical={is_critical})",
                     )
 
         # 3. Transitive reachability nodes
-        if reachability:
-            for r_node in reachability_node_ids:
+        if reachability_nodes:
+            for r_node in reachability_nodes:
                 all_target_nodes.add(r_node)
                 r_file = r_node.split(":")[0] if ":" in r_node else r_node
                 r_symbol = r_node.split(":")[1] if ":" in r_node else None
@@ -331,10 +356,14 @@ class BudgetAwareTestPlanner:
         covered_symbols: set[str] = set()
 
         for cand in candidates:
-            will_exceed_time = (total_time + cand.estimated_duration_seconds) > budget.max_duration_seconds
+            will_exceed_time = (
+                (total_time + cand.estimated_duration_seconds) > budget.max_duration_seconds
+            )
             will_exceed_count = len(selected) >= budget.max_tests
 
-            if mode == SelectionMode.FULL_REGRESSION or (not will_exceed_time and not will_exceed_count):
+            if mode == SelectionMode.FULL_REGRESSION or (
+                not will_exceed_time and not will_exceed_count
+            ):
                 selected.append(cand)
                 total_time += cand.estimated_duration_seconds
                 covered_symbols.update(cand.covered_node_ids)
