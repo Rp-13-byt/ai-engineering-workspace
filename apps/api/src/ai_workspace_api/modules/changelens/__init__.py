@@ -23,6 +23,7 @@ from ai_workspace_api.modules.changelens.risk_engine import (
     RiskDimension,
     RiskLevel,
 )
+from ai_workspace_api.modules.changelens.repository import ChangeLensRepository
 from ai_workspace_api.modules.changelens.test_selection import (
     BudgetAwareTestPlanner,
     ExecutionBudget,
@@ -66,6 +67,7 @@ __all__ = [
     "RiskDimension",
     "RiskLevel",
     "ChangeRiskEngine",
+    "ChangeLensRepository",
     "BudgetAwareTestPlanner",
     "ExecutionBudget",
     "SelectionMode",
