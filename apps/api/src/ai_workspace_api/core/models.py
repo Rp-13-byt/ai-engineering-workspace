@@ -7,6 +7,7 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     Enum,
+    Float,
     ForeignKey,
     Index,
     Integer,
@@ -276,3 +277,70 @@ class JobRecord(Base, TimestampMixin):
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     last_error: Mapped[str | None] = mapped_column(Text)
+
+
+class ChangeAnalysis(Base, TimestampMixin):
+    __tablename__ = "change_analyses"
+    __table_args__ = (
+        Index("ix_change_analyses_repo_created", "repository_id", "created_at"),
+        Index("ix_change_analyses_commits", "repository_id", "base_sha", "head_sha"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    repository_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("repositories.id", ondelete="CASCADE"), nullable=False
+    )
+    base_sha: Mapped[str] = mapped_column(String(64), nullable=False)
+    head_sha: Mapped[str] = mapped_column(String(64), nullable=False)
+    pr_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    risk_score: Mapped[float] = mapped_column(Float, nullable=False)
+    risk_level: Mapped[str] = mapped_column(String(20), nullable=False)
+    confidence_score: Mapped[float] = mapped_column(Float, nullable=False)
+    blast_radius: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    summary: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    dimensions_json: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list)
+    metadata_json: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+
+    findings: Mapped[list["ChangeFinding"]] = relationship(
+        back_populates="analysis", cascade="all, delete-orphan"
+    )
+    test_plans: Mapped[list["ChangeTestPlan"]] = relationship(
+        back_populates="analysis", cascade="all, delete-orphan"
+    )
+
+
+class ChangeFinding(Base, TimestampMixin):
+    __tablename__ = "change_findings"
+    __table_args__ = (Index("ix_change_findings_analysis", "analysis_id", "severity"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    analysis_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("change_analyses.id", ondelete="CASCADE"), nullable=False
+    )
+    category: Mapped[str] = mapped_column(String(60), nullable=False)
+    severity: Mapped[str] = mapped_column(String(20), nullable=False)
+    file_path: Mapped[str] = mapped_column(String(500), nullable=False)
+    symbol_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    message: Mapped[str] = mapped_column(Text, nullable=False)
+    evidence_json: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+
+    analysis: Mapped[ChangeAnalysis] = relationship(back_populates="findings")
+
+
+class ChangeTestPlan(Base, TimestampMixin):
+    __tablename__ = "change_test_plans"
+    __table_args__ = (Index("ix_change_test_plans_analysis", "analysis_id", "selection_mode"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    analysis_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("change_analyses.id", ondelete="CASCADE"), nullable=False
+    )
+    selection_mode: Mapped[str] = mapped_column(String(30), nullable=False)
+    selected_tests_json: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list)
+    omitted_tests_json: Mapped[list[dict]] = mapped_column(JSONB, nullable=False, default=list)
+    estimated_duration_seconds: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    coverage_ratio: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    fallback_triggered: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    fallback_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    analysis: Mapped[ChangeAnalysis] = relationship(back_populates="test_plans")
