@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_workspace_api.core.database import get_session
@@ -77,11 +77,13 @@ async def list_repository_analyses(
 @router.delete(
     "/analyses/{analysis_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
 )
 async def delete_analysis(
     analysis_id: uuid.UUID,
     organization_id: uuid.UUID = Depends(get_organization_id),
     _: User = Depends(require_permission(Permission.index_repository)),
     service: ChangeLensService = Depends(get_changelens_service),
-) -> None:
+) -> Response:
     await service.delete_analysis(analysis_id, organization_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
