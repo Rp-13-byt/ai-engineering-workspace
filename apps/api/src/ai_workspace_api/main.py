@@ -11,6 +11,7 @@ from ai_workspace_api.core.logging import configure_logging
 from ai_workspace_api.core.telemetry import RequestIdMiddleware, install_metrics
 from ai_workspace_api.infrastructure.rate_limit import limiter
 from ai_workspace_api.modules.auth.router import router as auth_router
+from ai_workspace_api.modules.changelens.router import router as changelens_router
 from ai_workspace_api.modules.chat.router import router as chat_router
 from ai_workspace_api.modules.docs.router import router as docs_router
 from ai_workspace_api.modules.health.router import router as health_router
@@ -59,4 +60,5 @@ app.include_router(chat_router, prefix=api_prefix)
 app.include_router(pull_request_router, prefix=api_prefix)
 app.include_router(tasks_router, prefix=api_prefix)
 app.include_router(docs_router, prefix=api_prefix)
+app.include_router(changelens_router, prefix=api_prefix)
 app.include_router(realtime_router)
