@@ -1,4 +1,13 @@
-import type { ChatResponse, PullRequestDraft, Repository, SearchResult, WorkspaceTask } from "@/types/api";
+import type {
+  ChangeAnalysis,
+  ChangeAnalysisListResponse,
+  ChangeAnalysisRequest,
+  ChatResponse,
+  PullRequestDraft,
+  Repository,
+  SearchResult,
+  WorkspaceTask
+} from "@/types/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 const DEMO_ORG_ID = "22222222-2222-2222-2222-222222222222";
@@ -81,5 +90,18 @@ export const api = {
     request<{ findings: Array<{ path: string; severity: string; message: string }> }>("/docs/bugs", {
       method: "POST",
       body: JSON.stringify(input)
-    })
+    }),
+  analyzeChange: (input: ChangeAnalysisRequest) =>
+    request<ChangeAnalysis>("/changelens/analyze", {
+      method: "POST",
+      body: JSON.stringify(input)
+    }),
+  getChangeAnalysis: (analysisId: string) =>
+    request<ChangeAnalysis>(`/changelens/analyses/${analysisId}`),
+  listChangeAnalyses: (repositoryId: string, limit = 20, offset = 0) =>
+    request<ChangeAnalysisListResponse>(
+      `/changelens/repositories/${repositoryId}/analyses?limit=${limit}&offset=${offset}`
+    ),
+  deleteChangeAnalysis: (analysisId: string) =>
+    request<void>(`/changelens/analyses/${analysisId}`, { method: "DELETE" })
 };
