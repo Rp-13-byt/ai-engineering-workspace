@@ -6,6 +6,8 @@ import enum
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+import httpx
+
 if TYPE_CHECKING:
     from ai_workspace_api.modules.changelens.reachability import ReachabilityAssessment
     from ai_workspace_api.modules.changelens.risk_engine import RiskAssessmentResult
@@ -175,3 +177,121 @@ class MarkdownReportBuilder:
             lines.append("")
 
         return "\n".join(lines).strip() + "\n"
+
+
+class GitHubCheckReporter:
+    """Builds and publishes ChangeLens GitHub Check Runs and PR summary comments."""
+
+    CHECK_NAME = "ChangeLens Risk Gate"
+
+    def __init__(
+        self,
+        access_token: str | None = None,
+        report_builder: MarkdownReportBuilder | None = None,
+    ) -> None:
+        self.access_token = access_token
+        self.report_builder = report_builder or MarkdownReportBuilder()
+
+    def _headers(self) -> dict[str, str]:
+        headers = {
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        if self.access_token:
+            headers["Authorization"] = f"Bearer {self.access_token}"
+        return headers
+
+    @staticmethod
+    def determine_conclusion(risk_result: RiskAssessmentResult) -> CheckConclusion:
+        level = risk_result.risk_level.value
+        if level == "CRITICAL" or risk_result.requires_human_approval:
+            return CheckConclusion.ACTION_REQUIRED
+        if level == "HIGH":
+            return CheckConclusion.NEUTRAL
+        return CheckConclusion.SUCCESS
+
+    @staticmethod
+    def _severity_to_annotation_level(severity: str) -> AnnotationLevel:
+        sev = severity.lower()
+        if sev in {"critical", "high"}:
+            return AnnotationLevel.FAILURE
+        if sev == "warning":
+            return AnnotationLevel.WARNING
+        return AnnotationLevel.NOTICE
+
+    def build_check_run_payload(
+        self,
+        head_sha: str,
+        risk_result: RiskAssessmentResult,
+        test_plan: TestPlanResult | None = None,
+        reachability: ReachabilityAssessment | None = None,
+        findings: list[dict[str, Any]] | None = None,
+    ) -> CheckRunPayload:
+        conclusion = self.determine_conclusion(risk_result)
+        markdown_summary = self.report_builder.render_pr_summary(
+            risk_result=risk_result,
+            test_plan=test_plan,
+            reachability=reachability,
+        )
+
+        annotations: list[CheckAnnotation] = []
+        for item in (findings or [])[:50]:
+            annotations.append(
+                CheckAnnotation(
+                    path=str(item.get("file_path", "README.md")),
+                    start_line=int(item.get("start_line", 1)),
+                    end_line=int(item.get("end_line", 1)),
+                    annotation_level=self._severity_to_annotation_level(
+                        str(item.get("severity", "warning"))
+                    ),
+                    message=str(item.get("message", "Risk finding detected")),
+                    title=str(item.get("category", "ChangeLens Finding")),
+                )
+            )
+
+        title = (
+            f"{risk_result.risk_level.value} Risk "
+            f"({risk_result.overall_risk_score:.1f}/100, "
+            f"{round(risk_result.confidence * 100)}% confidence)"
+        )
+
+        return CheckRunPayload(
+            name=self.CHECK_NAME,
+            head_sha=head_sha,
+            conclusion=conclusion,
+            output_title=title,
+            output_summary=risk_result.summary_explanation,
+            output_text=markdown_summary,
+            annotations=annotations,
+        )
+
+    async def publish_check_run(
+        self,
+        owner: str,
+        repo: str,
+        payload: CheckRunPayload,
+    ) -> dict[str, Any]:
+        async with httpx.AsyncClient(timeout=20) as client:
+            response = await client.post(
+                f"https://api.github.com/repos/{owner}/{repo}/check-runs",
+                headers=self._headers(),
+                json=payload.to_github_dict(),
+            )
+            response.raise_for_status()
+            return dict(response.json())
+
+    async def publish_pr_comment(
+        self,
+        owner: str,
+        repo: str,
+        pr_number: int,
+        body: str,
+    ) -> dict[str, Any]:
+        async with httpx.AsyncClient(timeout=20) as client:
+            response = await client.post(
+                f"https://api.github.com/repos/{owner}/{repo}/issues/{pr_number}/comments",
+                headers=self._headers(),
+                json={"body": body},
+            )
+            response.raise_for_status()
+            return dict(response.json())

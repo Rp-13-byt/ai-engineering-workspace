@@ -23,6 +23,14 @@ from ai_workspace_api.modules.changelens.risk_engine import (
     RiskDimension,
     RiskLevel,
 )
+from ai_workspace_api.modules.changelens.reporting import (
+    AnnotationLevel,
+    CheckAnnotation,
+    CheckConclusion,
+    CheckRunPayload,
+    GitHubCheckReporter,
+    MarkdownReportBuilder,
+)
 from ai_workspace_api.modules.changelens.repository import ChangeLensRepository
 from ai_workspace_api.modules.changelens.test_selection import (
     BudgetAwareTestPlanner,
@@ -68,6 +76,12 @@ __all__ = [
     "RiskLevel",
     "ChangeRiskEngine",
     "ChangeLensRepository",
+    "AnnotationLevel",
+    "CheckAnnotation",
+    "CheckConclusion",
+    "CheckRunPayload",
+    "GitHubCheckReporter",
+    "MarkdownReportBuilder",
     "BudgetAwareTestPlanner",
     "ExecutionBudget",
     "SelectionMode",
